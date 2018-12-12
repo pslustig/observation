@@ -90,7 +90,7 @@ def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
     for rawdata in rawdatas:
         header, data = load_rawfile(rawdata)
         if not isreduced(header):
-            filter = header['FILTER']
+            filter = bandgetter(rawdata)
             data, exthead = correct_image(data, bias, flats[filter], dark)
 
             header.extend(exthead)
