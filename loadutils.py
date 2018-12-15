@@ -14,9 +14,9 @@ def load_flat(filename, normalize=np.median):
     return flat
 
 
-def get_flat_filenames(path):
+def get_flat_filenames(path, pattern='*flat*.fits'):
     path = Path(path)
-    names = path.glob('*flat*.fits')
+    names = path.glob(pattern)
     return names
 
 
@@ -49,24 +49,24 @@ def load_flats(flatnames, normalize=np.median, keygen=get_flat_band_key):
 def get_bias_name(calibrationpath, biaskey='*offset*.fits'):
     path = Path(calibrationpath)
     names = list(path.glob(biaskey))
-    assert len(names) == 1, ('more than one bias file found, don\'t know '
-                             'which to use')
+    assert len(names) == 1, ('zero or more than one bias file found, change '
+                             'key')
     return names[0]
 
 
 def get_dark_name(calibrationpath, darkkey='*dark*.fits'):
     path = Path(calibrationpath)
-    names = list(path.glob('*dark*.fits'))
-    assert len(names) == 1, ('more than one dark file found, don\'t know '
-                             'which to use')
+    names = list(path.glob(darkkey))
+    assert len(names) == 1, ('zero or more than one dark file found, change '
+                             'key')
     return names[0]
 
 
 def load_calibration_files(calibrationpath, flatkeygen=get_filter_from_header,
-                           normalizeflats=np.median, biaskey='*offset*.fits',
-                           darkkey='*dark*.fits'):
+                           normalizeflats=np.median, flatkey='*flat*.fits',
+                           biaskey='*offset*.fits', darkkey='*dark*.fits'):
 
-    flatfilenames = get_flat_filenames(calibrationpath)
+    flatfilenames = get_flat_filenames(calibrationpath, flatkey)
     flats = load_flats(flatfilenames, normalize=normalizeflats,
                        keygen=flatkeygen)
 

@@ -2,39 +2,15 @@ from astropy.io import fits
 from loadutils import get_filter_from_header
 from pathlib import Path
 import warnings
-from PIL import Image
-from scipy.misc import imsave
-# import libtiff
-from zscale import zscale
 import numpy as np
 import matplotlib.pyplot as plt
+from observation import read_observation
 
 
-__all__ = ['correct_image', 'last_char_in_str', 'band_from_filename',
+__all__ = ['last_char_in_str', 'band_from_filename',
            'load_rawfile', 'make_target_directory', 'isreduced',
            'reduce_images']
 
-
-def correct_image(image, bias, flat=None, dark=None):
-    ''' correction algorithm '''
-
-    h = fits.header.Header()
-    h['REDUCED'] = True
-    h['FLATCORR'] = False
-    h['DARKCORR'] = False
-
-    reduced_image = (image - bias)
-    h['BIASCORR'] = True
-
-    if flat is not None:
-        reduced_image /= flat
-        h['FLATCORR'] = True
-
-    if dark is not None:
-        warnings.warn('Dark correction is not implemented yet.')
-        h['FLATCORR'] = False
-
-    return reduced_image, h
 
 
 def last_char_in_str(string, char):
@@ -87,11 +63,6 @@ def isreduced(header):
     return isreduced
 
 
-def get_vmin_vmax(image):
-    vmin, vmax = zscale(image)
-    return .5*vmin, 10*vmax
-
-
 def scale_to_range(image, range):
     image = np.interp(image, (image.min(), image.max()), range)
     return image
@@ -105,7 +76,6 @@ def hold_in_limits(image, limits):
 
 
 def contrast_scaler(image):
-    vmin, vmax = zscale(image)
 
     base = 1
 
@@ -130,19 +100,18 @@ def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
     targetpath = make_target_directory(datapath, targetpath)
 
     for rawdata in rawdatas:
-        header, data = load_rawfile(rawdata)
-        if not isreduced(header):
-            filter = bandgetter(rawdata)
-            data, exthead = correct_image(data, bias, flats[filter], dark)
-            data /= header['EXPTIME']
+        observation = read_observation(rawdata)
+        if not observation.isreduced:
+            filter = observation.filter
+            observation.reduce(bias, flats[filter], dark)
+            observation.normalize()
 
-            header.extend(exthead)
             if format == 'fits':
-                fits.PrimaryHDU(header=header, data=data).writeto(
-                                    targetpath / ('reduced_' + rawdata.name),
-                                    overwrite=True)
+                observation.save(
+                    targetpath / ('reduced_' + rawdata.stem + '.fits'),
+                    overwrite=True)
             elif format == 'tif':
                 # im = Image.fromarray(data)
                 # im.save(targetpath / ('reduced_' + rawdata.stem + '.tif'))
                 tiffsaver(targetpath / ('reduced_' + rawdata.stem + '.tif'),
-                          data)
+                          observation)

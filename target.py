@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 
 class Observation(np.ndarray):
 
-    def __new__(cls, data, header, filter=None, mask=None):
+    def __new__(cls, data, header, filename=None):
         obj = np.asarray(data).view(cls)
         obj.isreduced = ru.isreduced(header)
         obj.filter = header['FILTER']
+        obj.filename = filename
+        obj._header = header
         return obj
 
     def __array_finalize__(self, obj):
@@ -17,6 +19,8 @@ class Observation(np.ndarray):
             return
         self.isreduced = getattr(obj, 'isreduced', None)
         self.filter = getattr(obj, 'filter', None)
+        self.filename = getattr(obj, 'filename', None)
+        self._header = getattr(obj, '_header', None)
 
     def plot(self, ax=None, scaling=None, **kwargs):
 
@@ -31,9 +35,11 @@ class Observation(np.ndarray):
         return ax
 
 
-h = fits.header.Header()
-h['FILTER'] = 'dsgds'
-d = np.arange(4).reshape((2, 2))
-a = Observation(d, h)
-a.plot()
-a.plot(scaling=lambda x: np.log(x))
+def read_observation(filename, idx=0):
+
+    with fits.open(filename) as hdul:
+        hdu = hdul[idx]
+        data = hdu.data
+        header = fits.header.Header(hdu.header)
+
+    return Observation(data, header, filename)
