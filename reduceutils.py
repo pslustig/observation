@@ -2,17 +2,12 @@ from astropy.io import fits
 from loadutils import get_filter_from_header
 from pathlib import Path
 import warnings
-from PIL import Image
-from scipy.misc import imsave
-# import libtiff
-from zscale import zscale
-import numpy as np
-import matplotlib.pyplot as plt
+import tiffsaving as tf
 
 
 __all__ = ['correct_image', 'last_char_in_str', 'band_from_filename',
            'load_rawfile', 'make_target_directory', 'isreduced',
-           'reduce_images']
+           'hold_in_limits', 'reduce_images']
 
 
 def correct_image(image, bias, flat=None, dark=None):
@@ -87,40 +82,15 @@ def isreduced(header):
     return isreduced
 
 
-def get_vmin_vmax(image):
-    vmin, vmax = zscale(image)
-    return .5*vmin, 10*vmax
-
-
-def scale_to_range(image, range):
-    image = np.interp(image, (image.min(), image.max()), range)
-    return image
-
-
 def hold_in_limits(image, limits):
+    ''' image values that are not in limits are set to minimum or
+        maximum values'''
+
     vmin, vmax = limits
     image[image > vmax] = vmax
     image[image < vmin] = vmin
-    return image
-
-
-def contrast_scaler(image):
-    vmin, vmax = zscale(image)
-
-    base = 1
-
-    image = np.log(np.log(np.log(np.log((image/base)))))
 
     return image
-
-
-def tiffsaver(filename, image):
-    image = contrast_scaler(image)
-    image = scale_to_range(image, (0, 2**16))
-    image = np.rint(image)  # , dtype=np.int16)
-    plt.figure()
-    plt.imshow(image, origin='lower')
-    plt.colorbar()
 
 
 def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
@@ -142,7 +112,5 @@ def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
                                     targetpath / ('reduced_' + rawdata.name),
                                     overwrite=True)
             elif format == 'tif':
-                # im = Image.fromarray(data)
-                # im.save(targetpath / ('reduced_' + rawdata.stem + '.tif'))
-                tiffsaver(targetpath / ('reduced_' + rawdata.stem + '.tif'),
-                          data)
+                tf.tiffsaver(targetpath / ('reduced_' + rawdata.stem + '.tif'),
+                             data)
