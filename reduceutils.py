@@ -1,16 +1,14 @@
 from astropy.io import fits
 from loadutils import get_filter_from_header
 from pathlib import Path
-import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 from observation import read_observation
 
 
 __all__ = ['last_char_in_str', 'band_from_filename',
-           'load_rawfile', 'make_target_directory', 'isreduced',
+           'load_rawfile', 'make_target_directory',
            'reduce_images']
-
 
 
 def last_char_in_str(string, char):
@@ -51,16 +49,6 @@ def make_target_directory(datapath, targetpath):
     targetpath.mkdir(exist_ok=True)
 
     return Path(targetpath)
-
-
-def isreduced(header):
-
-    try:
-        isreduced = header['REDUCED']
-    except KeyError:
-        isreduced = False
-
-    return isreduced
 
 
 def scale_to_range(image, range):
