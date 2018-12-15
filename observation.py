@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import warnings
 
 
+__all__ = ['Observation', 'read_observation', 'correct_image', 'isreduced']
+
+
 class Observation(np.ndarray):
 
     def __new__(cls, data, header, filename=None, isnormalized=False):
