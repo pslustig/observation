@@ -51,11 +51,6 @@ def make_target_directory(datapath, targetpath):
     return Path(targetpath)
 
 
-def scale_to_range(image, range):
-    image = np.interp(image, (image.min(), image.max()), range)
-    return image
-
-
 def hold_in_limits(image, limits):
     vmin, vmax = limits
     image[image > vmax] = vmax
@@ -63,35 +58,18 @@ def hold_in_limits(image, limits):
     return image
 
 
-def contrast_scaler(image):
-
-    base = 1
-
-    image = np.log(np.log(np.log(np.log((image/base)))))
-
-    return image
-
-
-def tiffsaver(filename, image):
-    image = contrast_scaler(image)
-    image = scale_to_range(image, (0, 2**16))
-    image = np.rint(image)  # , dtype=np.int16)
-    plt.figure()
-    plt.imshow(image, origin='lower')
-    plt.colorbar()
-
-
 def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
-                  bandgetter=get_filter_from_header, format='fits'):
+                  bandgetter=get_filter_from_header, format='fits',
+                  datakey='*.fit', **kwargs):
 
-    rawdatas = datapath.glob('*.fit*')
+    rawdatas = datapath.glob(datakey)
     targetpath = make_target_directory(datapath, targetpath)
 
     for rawdata in rawdatas:
         observation = read_observation(rawdata)
         if not observation.isreduced:
             filter = observation.filter
-            observation.reduce(bias, flats[filter], dark)
+            observation = observation.reduce(bias, flats[filter], dark)
             observation.normalize()
 
             if format == 'fits':
@@ -99,7 +77,6 @@ def reduce_images(datapath, flats, bias, dark, targetpath='subfolder',
                     targetpath / ('reduced_' + rawdata.stem + '.fits'),
                     overwrite=True)
             elif format == 'tif':
-                # im = Image.fromarray(data)
-                # im.save(targetpath / ('reduced_' + rawdata.stem + '.tif'))
-                tiffsaver(targetpath / ('reduced_' + rawdata.stem + '.tif'),
-                          observation)
+                observation.export(
+                    targetpath / ('reduced_' + rawdata.stem + '.tif'),
+                    **kwargs)

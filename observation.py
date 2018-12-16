@@ -2,6 +2,10 @@ import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import warnings
+import tiffsaving as tf
+from copy import deepcopy
+import reduceutils as ru
+from libtiff import TIFF
 
 
 __all__ = ['Observation', 'read_observation', 'correct_image', 'isreduced']
@@ -58,12 +62,23 @@ class Observation(np.ndarray):
 
     def reduce(self, bias, flat, dark):
 
-        self, h = correct_image(self, bias, flat, dark)
-        self.isreduced = True
-        self._header.update(h)
+        image, h = correct_image(self, bias, flat, dark)
+        image.isreduced = True
+        image._header.update(h)
+        return image
 
-    def export(self):
-        raise NotImplementedError('Export functions are not implemented yet')
+    def export(self, filename, scaling=tf.log_scaler, cut='auto', bits=16,
+               **kwargs):
+        image = deepcopy(self)
+
+        if scaling is not None:
+            image = scaling(image, **kwargs)
+
+        image = tf.scale_to_range(image, (0, 2**bits), cut)
+        image = np.rint(image).astype(np.uint16)
+        tiff = TIFF.open(str(filename.absolute()), mode='w')
+        tiff.write_image(image)
+        tiff.close()
 
 
 def read_observation(filename, idx=0):
@@ -95,7 +110,7 @@ def correct_image(image, bias, flat=None, dark=None):
         warnings.warn('Dark correction is not implemented yet.')
         h['FLATCORR'] = False
 
-    return image, h
+    return reduced_image, h
 
 
 def isreduced(header):
