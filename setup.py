@@ -13,6 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/pslustig/reduce_telescope_data.git",
     packages=setuptools.find_packages(),
+    install_requires=['numpy', 'astropy', 'libtiff'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
