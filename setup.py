@@ -11,9 +11,9 @@ setuptools.setup(
     description="Pakckage for reduction of optical telescope data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pslustig/reduce_telescope_data.git",
+    url="https://github.com/pslustig/observation.git",
     packages=setuptools.find_packages(),
-    install_requires=['numpy', 'astropy', 'libtiff'],
+    install_requires=['numpy', 'astropy', 'libtiff', 'matplotlib'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
