@@ -1,8 +1,6 @@
-.. image:: https://travis-ci.org/pslustig/observation.svg?branch=master
-    :target: https://travis-ci.org/pslustig/observation
-
 Observation 
 ===========
+|travis| |maintainability| |testcoverage|
 
 `Observation` is a python package to reduce optical telescope data and export it as tiff image
 
@@ -28,3 +26,14 @@ License
 -------
 
 This project is licensed under the MIT license.
+
+.. |travis| image:: https://travis-ci.org/pslustig/observation.svg?branch=master
+    :target: https://travis-ci.org/pslustig/observation
+
+.. |maintainability| image:: https://api.codeclimate.com/v1/badges/1fe74bcad6b6190f862c/maintainability
+   :target: https://codeclimate.com/github/pslustig/observation/maintainability
+   :alt: Maintainability
+
+.. |testcoverage| image:: https://api.codeclimate.com/v1/badges/1fe74bcad6b6190f862c/test_coverage
+   :target: https://codeclimate.com/github/pslustig/observation/test_coverage
+   :alt: Test Coverage
