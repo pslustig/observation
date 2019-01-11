@@ -1,4 +1,4 @@
-Observation
+Observation [![Build Status](https://travis-ci.org/pslustig/observation.svg?branch=master)](https://travis-ci.org/pslustig/observation)
 ===========
 
 `Observation` is a python package to reduce optical telescope data and export it as tiff image
