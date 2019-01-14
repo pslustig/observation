@@ -6,6 +6,10 @@ before_script:
   - chmod +x ./cc-test-reporter
 install:
   pip install .
+addons:
+  postgresql: "9.5"
+services:
+  - redis-server
 env:
   global:
     - GIT_COMMITTED_AT=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git log -1 --pretty=format:%ct; else git log -1 --skip 1 --pretty=format:%ct; fi)
